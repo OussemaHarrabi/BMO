@@ -31,7 +31,7 @@ interface Message {
 interface ChatViewProps {
   sessionId?: string | null;
   onSessionUpdate?: () => void;
-  onFirstMessage?: (firstMessageText: string) => void;
+  onFirstMessage?: (firstMessageText: string) => Promise<string | null>;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -65,6 +65,9 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
   // Viewer state
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
+  // Track if we just created a session (to avoid overwriting in-flight messages)
+  const justCreatedSessionRef = useRef<string | null>(null);
+
   // Load session messages when sessionId changes
   useEffect(() => {
     const loadSession = async () => {
@@ -72,9 +75,18 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
       if (sessionId === lastLoadedSessionRef.current) return;
       
       if (!sessionId) {
-        // New chat - clear messages
-        setMessages([]);
+        // New chat - clear messages only if not already empty
+        if (messages.length > 0) {
+          setMessages([]);
+        }
         lastLoadedSessionRef.current = null;
+        return;
+      }
+
+      // Skip loading if we just created this session (messages are already in state)
+      if (sessionId === justCreatedSessionRef.current) {
+        lastLoadedSessionRef.current = sessionId;
+        justCreatedSessionRef.current = null;
         return;
       }
 
@@ -82,6 +94,12 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
       try {
         const session = await getChatSession(sessionId);
         if (session && session.messages) {
+          // Don't overwrite if server has no messages but we have local messages
+          // (means we're in the middle of sending the first message)
+          if (session.messages.length === 0 && messages.length > 0) {
+            lastLoadedSessionRef.current = sessionId;
+            return;
+          }
           const loadedMessages: Message[] = session.messages.map((msg: ChatSessionMessage) => ({
             id: msg.id,
             sender: msg.sender,
@@ -186,13 +204,18 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
     setIsLoading(true);
 
     const isFirstMessage = messages.length === 0;
-
-    if (sessionId) {
-      addMessageToSession(sessionId, 'user', messageText).catch(console.error);
-    }
+    let activeSessionId = sessionId;
 
     if (isFirstMessage && onFirstMessage) {
-      onFirstMessage(messageText);
+      const newSessionId = await onFirstMessage(messageText);
+      if (newSessionId) {
+        activeSessionId = newSessionId;
+        justCreatedSessionRef.current = newSessionId;
+      }
+    }
+
+    if (activeSessionId) {
+      addMessageToSession(activeSessionId, 'user', messageText).catch(console.error);
     }
 
     try {
@@ -209,9 +232,9 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
       };
       setMessages((prev) => [...prev, bmoMessage]);
 
-      if (sessionId) {
+      if (activeSessionId) {
         addMessageToSession(
-          sessionId, 
+          activeSessionId, 
           'bmo', 
           response.answer, 
           response.confidence,
@@ -231,8 +254,8 @@ const ChatView: React.FC<ChatViewProps> = ({ sessionId, onSessionUpdate, onFirst
       };
       setMessages((prev) => [...prev, errorMessage]);
 
-      if (sessionId) {
-        addMessageToSession(sessionId, 'bmo', errorMessage.text).catch(console.error);
+      if (activeSessionId) {
+        addMessageToSession(activeSessionId, 'bmo', errorMessage.text).catch(console.error);
       }
     } finally {
       setIsLoading(false);

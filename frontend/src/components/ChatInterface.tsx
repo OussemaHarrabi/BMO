@@ -62,14 +62,16 @@ const BMOInterface: React.FC = () => {
     }
   };
 
-  const handleFirstMessage = async (firstMessageText: string) => {
+  const handleFirstMessage = async (firstMessageText: string): Promise<string | null> => {
     if (!currentSessionId) {
       const session = await createChatSession(firstMessageText.slice(0, 50));
       if (session) {
         setCurrentSessionId(session.session_id);
         await loadSessions();
+        return session.session_id;
       }
     }
+    return currentSessionId;
   };
 
   const formatDate = (dateStr: string) => {
