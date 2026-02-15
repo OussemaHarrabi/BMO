@@ -1,0 +1,45 @@
+qdrant:
+  mode: "remote"
+  path: "./bmo_data/qdrant"
+  host: "localhost"
+  port: 6333
+  api_key: null
+  
+  collection:
+    name: "bmo_memories"
+    vector_size: 768
+    distance: "cosine"
+    on_disk: true
+    
+  indexing:
+    hnsw_ef_construct: 128
+    hnsw_m: 16
+    
+  search:
+    default_limit: 10
+    score_threshold: 0.3
+
+neo4j:
+  uri: "bolt://localhost:7687"
+  user: "neo4j"
+  password: "bmo_password"
+  database: "neo4j"
+  max_connection_pool_size: 50
+
+sqlite:
+  path: "./bmo_data/metadata.db"
+  journal_mode: "WAL"
+  synchronous: "NORMAL"
+  cache_size: 10000
+
+files:
+  base_path: "./bmo_data/files"
+  screenshots_path: "./bmo_data/files/screenshots"
+  max_file_size_mb: 50
+  cleanup_after_days: 90
+
+backup:
+  enabled: true
+  interval_hours: 24
+  path: "./bmo_data/backups"
+  keep_last: 7

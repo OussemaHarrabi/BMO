@@ -1,0 +1,104 @@
+# BMO - AI Personal Memory System
+# Docker Compose Configuration
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: bmo-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+
+  # Neo4j - Knowledge graph database
+  neo4j:
+    image: neo4j:5-community
+    container_name: bmo-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-bmo_password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    restart: unless-stopped
+
+  # Redis - Event bus & caching
+  redis:
+    image: redis:7-alpine
+    container_name: bmo-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bmo-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - bmo_data:/app/bmo_data
+      - ${CAPTURE_HOST_PATH:-C:/Users/DELL/Downloads/InterestCapture/captures}:/capture_data
+    environment:
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-bmo_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PYTHONUNBUFFERED=1
+      - CAPTURE_FOLDER_PATH=/capture_data
+    depends_on:
+      - qdrant
+      - neo4j
+      - redis
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    image: node:20-alpine
+    container_name: bmo-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+    name: bmo-qdrant-data
+  neo4j_data:
+    name: bmo-neo4j-data
+  neo4j_logs:
+    name: bmo-neo4j-logs
+  redis_data:
+    name: bmo-redis-data
+  bmo_data:
+    name: bmo-app-data
+
+networks:
+  default:
+    name: bmo-network

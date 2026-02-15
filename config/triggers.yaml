@@ -1,0 +1,101 @@
+triggers:
+  browser:
+    dwell_time:
+      enabled: true
+      threshold_seconds: 5
+      min_viewport_visible: 0.5
+      debounce_seconds: 3
+      
+    slow_scroll:
+      enabled: true
+      velocity_threshold_px_per_ms: 0.5
+      sample_window_ms: 500
+      min_duration_ms: 2000
+      
+    copy_event:
+      enabled: true
+      min_length: 20
+      max_length: 10000
+      include_source_url: true
+      
+    tab_change:
+      enabled: true
+      min_time_on_tab_seconds: 3
+      capture_leaving_tab: true
+      
+    url_change:
+      enabled: true
+      same_domain_threshold_seconds: 5
+  
+  os:
+    file_created:
+      enabled: true
+      watch_paths:
+        - "${HOME}/Documents"
+        - "${HOME}/Downloads"
+        - "${HOME}/Projects"
+        - "${HOME}/Desktop"
+      ignore_patterns:
+        - "*.tmp"
+        - "*.swp"
+        - ".git/*"
+        - "node_modules/*"
+        - "__pycache__/*"
+        - "*.pyc"
+      
+    file_modified:
+      enabled: true
+      debounce_seconds: 10
+      min_size_bytes: 100
+      max_size_bytes: 10485760
+      
+    app_focus:
+      enabled: true
+      min_focus_seconds: 5
+      track_apps:
+        - "Code"
+        - "Cursor"
+        - "Terminal"
+        - "chrome"
+        - "firefox"
+        - "Safari"
+        - "Slack"
+        - "Discord"
+      
+    clipboard:
+      enabled: true
+      min_length: 10
+      max_length: 50000
+      dedupe_window_seconds: 5
+      
+    screenshot:
+      enabled: false
+      hotkey: "Ctrl+Shift+S"
+
+  failsafe:
+    force_capture:
+      enabled: true
+      interval_seconds: 30
+      only_if_active: true
+      
+    idle_process:
+      enabled: true
+      idle_threshold_seconds: 60
+
+deduplication:
+  screenshot:
+    algorithm: "phash"
+    threshold: 0.2
+    hash_size: 16
+    
+  text:
+    algorithm: "simhash"
+    threshold: 0.1
+    
+  cache_size: 1000
+
+rate_limits:
+  max_events_per_minute: 30
+  max_screenshots_per_minute: 10
+  max_api_calls_per_minute: 60
+  burst_allowance: 5

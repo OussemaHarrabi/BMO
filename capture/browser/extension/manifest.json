@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Interest Capture – Auto Screenshot on Engagement",
+  "version": "1.0.0",
+  "description": "Monitors 13 user engagement heuristics (selection, copy/cut, context menu, find-on-page, scroll-stop, zoom, idle dwell, tab return, app switch, rage click, erratic scroll, Facebook likes/reactions, Instagram likes) and captures screenshots automatically.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "downloads",
+    "downloads.ui"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

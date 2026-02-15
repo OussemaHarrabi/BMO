@@ -1,0 +1,64 @@
+app:
+  name: "BMO"
+  version: "0.1.0"
+  debug: false
+  log_level: "INFO"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: false
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+
+agents:
+  confidence:
+    high: 0.7
+    medium: 0.4
+  
+  retrieval:
+    vector_top_k: 5
+    graph_depth: 2
+    hybrid_weight_vector: 0.7
+    hybrid_weight_graph: 0.3
+    
+  context_max_tokens: 2000
+  response_max_tokens: 500
+  timeout_seconds: 30
+  max_retries: 2
+  retry_delay_seconds: 1
+
+processing:
+  queue_max_size: 100
+  batch_size: 5
+  
+  ocr:
+    engine: "surya"
+    languages: ["en"]
+    confidence_threshold: 0.7
+    
+  summary_max_length: 200
+  entity_confidence_threshold: 0.5
+  max_entities_per_memory: 20
+
+capture:
+  enabled: true
+  os_monitor: true
+  browser_extension: true
+  
+  event_bus:
+    type: "redis"
+    host: "localhost"
+    port: 6379
+
+frontend:
+  dev_server_port: 3000
+  build_dir: "./frontend/dist"
+
+logging:
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "./bmo_data/logs/app.log"
+  max_size_mb: 50
+  backup_count: 5

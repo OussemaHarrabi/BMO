@@ -1,0 +1,21 @@
+# Core dependencies
+watchdog>=3.0.0
+
+# Embedding generation (sentence-transformers)
+sentence-transformers>=2.2.0
+torch>=2.0.0
+transformers>=4.30.0
+accelerate>=0.20.0
+
+# LLM integration (Ollama - optional, can use transformers instead)
+ollama>=0.1.0
+
+# Document processing
+python-docx>=0.8.11
+PyPDF2>=3.0.0
+
+# HuggingFace Hub (for model downloads)
+huggingface_hub>=0.16.0
+
+# Optional: Image processing support
+# Pillow>=10.0.0

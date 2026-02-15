@@ -1,0 +1,73 @@
+defaults:
+  temperature: 0.7
+  max_tokens: 512
+  timeout_seconds: 30
+
+models:
+  router:
+    name: "phi3.5:latest"
+    params: 1.5B
+    purpose: "Intent classification, category routing"
+    settings:
+      temperature: 0.3
+      max_tokens: 100
+      format: "json"
+    
+  reasoner:
+    name: "qwen3:4b"
+    params: 4B
+    purpose: "Answer generation, summarization"
+    settings:
+      temperature: 0.7
+      max_tokens: 500
+      
+  classifier:
+    name: "phi3.5:latest"
+    params: 1.5B
+    purpose: "Content category classification"
+    settings:
+      temperature: 0.1
+      max_tokens: 20
+      
+  entity_extractor:
+    name: "qwen3:4b"
+    params: 4B
+    purpose: "Named entity extraction for knowledge graph"
+    settings:
+      temperature: 0.3
+      max_tokens: 300
+      format: "json"
+      
+  verifier:
+    name: "phi3.5:latest"
+    params: 1.5B
+    purpose: "Fact-checking and confidence scoring (separate from reasoner)"
+    settings:
+      temperature: 0.2
+      max_tokens: 400
+      format: "json"
+      
+  vision:
+    name: "gemma3:4b-it"
+    params: 4B
+    purpose: "Screenshot understanding, visual classification"
+    settings:
+      temperature: 0.5
+      max_tokens: 300
+
+embeddings:
+  name: "nomic-embed-text-v1.5"
+  params: 137M
+  dimension: 768
+  normalize: true
+
+loading:
+  preload:
+    - "router"
+    - "classifier"
+  on_demand:
+    - "reasoner"
+    - "entity_extractor"
+    - "verifier"
+    - "vision"
+  unload_after_idle_seconds: 300
