@@ -18,7 +18,7 @@ BMO is an **AI-powered personal memory assistant** that continuously captures an
 - 📊 **Vector Database** - Qdrant stores embeddings for lightning-fast similarity search
 - 🕸️ **Knowledge Graph** - Neo4j builds connections between your memories
 - 🎮 **BMO Interface** - Retro gaming-inspired UI that's fun to use
-- 🔒 **100% Local** - All processing happens on your machine, your data never leaves
+- 🔒 **100% Local** - Everything is processed on your machine, so your data never leaves
 
 ## 🏗️ Architecture Overview
 
